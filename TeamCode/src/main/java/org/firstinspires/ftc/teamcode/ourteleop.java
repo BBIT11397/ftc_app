@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
@@ -60,9 +61,14 @@ public class ourteleop extends OpMode{
     double          clawOffset  = 0.0 ;                  // Servo mid position
     final double    CLAW_SPEED  = 0.02 ;                 // sets rate to move servo
 
+
+
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
+
+
     @Override
     public void init() {
         /* Initialize the hardware variables.
@@ -73,6 +79,7 @@ public class ourteleop extends OpMode{
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Say", "Hello Driver");    //
     }
+
 
     /*
      * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
@@ -93,12 +100,19 @@ public class ourteleop extends OpMode{
      */
     @Override
     public void loop() {
+
+
         float strafeThrottle;
         float strafeDirection;
         float turnDirection;
         float turnThrottle;
+        float armmotor;
+        float lazysusan;
 
 
+        float arm;
+        boolean jawsclosed;
+        boolean jawsopen;
 
         // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
         strafeThrottle = -gamepad1.left_stick_y;
@@ -106,37 +120,53 @@ public class ourteleop extends OpMode{
         strafeDirection = -gamepad1.left_stick_x;
         turnDirection = -gamepad1.right_stick_x;
 
+        lazysusan = gamepad2.right_stick_x;
+        jawsclosed = gamepad2.right_bumper;
+        jawsopen = gamepad2.left_bumper;
+
+
 
 //        robot.mecanumWheelDrive(0, strafeThrottle, 0, 0);
         robot.mecanumWheelDrive(strafeDirection, strafeThrottle, turnDirection, turnThrottle);
 
+        if (gamepad2.right_bumper) {
 
-        // Use gamepad left & right Bumpers to open and close the claw
-      /*  if (gamepad1.right_bumper)
-            clawOffset += CLAW_SPEED;
-        else if (gamepad1.left_bumper)
-            clawOffset -= CLAW_SPEED;
-            */
+            robot.rightClaw.setPosition(robot.jawsclosed);
+            telemetry.addData("position", robot.jawsclosed);
+            telemetry.update();
 
-       /* // Move both servos to new position.  Assume servos are mirror image of each other.
-        clawOffset = Range.clip(clawOffset, -0.5, 0.5);
-        robot.leftClaw.setPosition(robot.MID_SERVO + clawOffset);
-        robot.rightClaw.setPosition(robot.MID_SERVO - clawOffset);
+            robot.leftClaw.setPosition(robot.jawsclosed);
+            telemetry.addData("position", robot.jawsclosed);
+            telemetry.update();
 
-        // Use gamepad buttons to move the arm up (Y) and down (A)
-        if (gamepad1.y)
-            robot.leftArm.setPower(robot.ARM_UP_POWER);
-        else if (gamepad1.a)
-            robot.leftArm.setPower(robot.ARM_DOWN_POWER);
-        else
-            robot.leftArm.setPower(0.0);
-*/
+        }
+
+        if (gamepad2.left_bumper) {
+
+            robot.rightClaw.setPosition(robot.jawsopen);
+            telemetry.addData("position", robot.jawsopen);
+            telemetry.update();
+
+            robot.leftClaw.setPosition(robot.jawsopen);
+            telemetry.addData("position", robot.jawsopen);
+            telemetry.update();
+
+        }
+
+        armmotor = gamepad2.right_stick_y;
+        robot.move_arm_function(armmotor);
+
+
+        lazysusan = gamepad2.left_stick_x;
+        robot.lazy_susan_function(lazysusan);
+
         // Send telemetry message to signify robot running;
-        telemetry.addData("jaws",  "Offset = %.2f", clawOffset);
+        telemetry.addData("armmotor",  "Offset = %.2f", armmotor);
         telemetry.addData("left_y",  "%.2f", strafeThrottle);
         telemetry.addData("left_x", "%.2f", strafeDirection);
         telemetry.addData("right_x",  "%.2f", turnDirection);
         telemetry.addData("right_y", "%.2f", turnThrottle);
+        telemetry.addData("lazysusan",  "Offset = %.2f", lazysusan);
     }
 
     /*
