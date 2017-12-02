@@ -109,8 +109,6 @@ public class ourteleop extends OpMode{
         float armmotor;
         float lazysusan;
 
-
-        float arm;
         boolean jawsclosed;
         boolean jawsopen;
 
@@ -124,9 +122,19 @@ public class ourteleop extends OpMode{
         jawsclosed = gamepad2.right_bumper;
         jawsopen = gamepad2.left_bumper;
 
+        float right_trigger = gamepad2.right_trigger;
+        if (right_trigger != 0){
+            turnThrottle=right_trigger;
+            telemetry.addData("position", right_trigger);
+            telemetry.update();
+        }
 
+        float left_trigger = gamepad2.left_trigger;
+        if (left_trigger != 0){
+            turnThrottle=-left_trigger;
+            telemetry.addData("position", left_trigger);
+        }
 
-//        robot.mecanumWheelDrive(0, strafeThrottle, 0, 0);
         robot.mecanumWheelDrive(strafeDirection, strafeThrottle, turnDirection, turnThrottle);
 
         if (gamepad2.right_bumper) {
@@ -135,8 +143,20 @@ public class ourteleop extends OpMode{
             telemetry.addData("position", robot.jawsclosed);
             telemetry.update();
 
-            robot.leftClaw.setPosition(robot.jawsclosed);
+            robot.leftClaw.setPosition(robot.jawsopen);
+            telemetry.addData("position", robot.jawsopen);
+            telemetry.update();
+
+        }
+
+        if (gamepad2.dpad_left) {
+
+            robot.rightClaw.setPosition(robot.jawsclosed);
             telemetry.addData("position", robot.jawsclosed);
+            telemetry.update();
+
+            robot.leftClaw.setPosition(robot.jawsopen);
+            telemetry.addData("position", robot.jawsopen);
             telemetry.update();
 
         }
@@ -147,15 +167,14 @@ public class ourteleop extends OpMode{
             telemetry.addData("position", robot.jawsopen);
             telemetry.update();
 
-            robot.leftClaw.setPosition(robot.jawsopen);
-            telemetry.addData("position", robot.jawsopen);
+            robot.leftClaw.setPosition(robot.jawsclosed);
+            telemetry.addData("position", robot.jawsclosed);
             telemetry.update();
 
         }
 
         armmotor = gamepad2.right_stick_y;
         robot.move_arm_function(armmotor);
-
 
         lazysusan = gamepad2.left_stick_x;
         robot.lazy_susan_function(lazysusan);
@@ -167,6 +186,7 @@ public class ourteleop extends OpMode{
         telemetry.addData("right_x",  "%.2f", turnDirection);
         telemetry.addData("right_y", "%.2f", turnThrottle);
         telemetry.addData("lazysusan",  "Offset = %.2f", lazysusan);
+        telemetry.update();
     }
 
     /*
