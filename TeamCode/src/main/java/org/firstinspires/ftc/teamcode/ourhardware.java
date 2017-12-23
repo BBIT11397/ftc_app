@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -57,17 +58,33 @@ public class ourhardware {
     public DcMotor lazysusan = null;
     public Servo rightClaw = null;
     public Servo leftClaw = null;
+    public Servo jewel_arm = null;
+    public DcMotor footmotor = null;
 
 
-
-    static final double MIN_ARM_POSITION = -400;
-    static final double MAX_ARM_POSITION = 600;
+    static final double MIN_ARM_POSITION = -1200;
+    static final double MAX_ARM_POSITION = 5000;
+    static final int MIN_FOOT_POSITION = 1500;
+    static final int MAX_FOOT_POSITION = 0;
     static final int MULTIPLIER = 2;
     public static final double MID_SERVO = 0.5;
     static final double jawsopen = 0.7;
     static final double jawsclosed = 0;
-    static final double lazyleft = -600;
+    static final double lazyleft = -50;
     static final double lazyright = 600;
+    static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder
+    static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
+    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
+    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+            (WHEEL_DIAMETER_INCHES * 3.1415);
+    static final double JEWEL_UP = 0;
+    static final double JEWEL_DOWN = 0.75;
+    boolean movingUp = false;
+    boolean movingDown = false;
+
+    ColorSensor sensorColor;
+
+
     /* local OpMode members. */
     HardwareMap hwMap = null;
     private ElapsedTime period = new ElapsedTime();
@@ -90,14 +107,17 @@ public class ourhardware {
         rightback = hwMap.get(DcMotor.class, "rightback");
         armmotor = hwMap.get(DcMotor.class, "armmotor");
         lazysusan = hwMap.get(DcMotor.class, "lazysusan");
+        footmotor = hwMap.get(DcMotor.class, "footmotor");
+        sensorColor = hwMap.get(ColorSensor.class, "color_sensor");
+
 
         leftfront.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
         rightfront.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
         leftback.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
         rightback.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
         armmotor.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        lazysusan.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
-
+        lazysusan.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+        footmotor.setDirection(DcMotor.Direction.FORWARD); // Set to FORWARD if using AndyMark motors
 
         // Set all motors to zero power
         leftfront.setPower(0);
@@ -106,6 +126,7 @@ public class ourhardware {
         rightback.setPower(0);
         armmotor.setPower(0);
         lazysusan.setPower(0);
+        footmotor.setPower(0);
 
         // Set all motors to run without encoders.
         // May want to use RUN_USING_ENCODERS if encoders are installed.
@@ -116,12 +137,12 @@ public class ourhardware {
 
         // Define and initialize ALL installed servos.
         rightClaw = hwMap.get(Servo.class, "rightClaw");
-        rightClaw.setPosition(MID_SERVO);
+        rightClaw.setPosition(jawsopen);
         //servo
         rightClaw = hwMap.servo.get("rightClaw");
 
         leftClaw = hwMap.get(Servo.class, "leftClaw");
-        leftClaw.setPosition(MID_SERVO);
+        leftClaw.setPosition(jawsclosed);
         //servo
         leftClaw = hwMap.servo.get("leftClaw");
 
@@ -132,6 +153,14 @@ public class ourhardware {
         lazysusan.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lazysusan.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lazysusan.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        footmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        footmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        footmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        jewel_arm = hwMap.get(Servo.class, "jewel_arm");
+        jewelUp();
+        //servo
     }
 
     public void move_arm_function(float stick_y_value) {
@@ -152,7 +181,7 @@ public class ourhardware {
         int change_amount = (stick * 10 * MULTIPLIER);
         int armPosition = (armmotor.getCurrentPosition() + change_amount);
 
-        float armPower = (Range.clip(stick, -1, 1));
+        float armPower = (Range.clip(stick, -0.33f, 0.33f));
 
         if (armPosition >= MAX_ARM_POSITION && up) {
             armmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -167,7 +196,7 @@ public class ourhardware {
         }
 
         // armmotor.setTargetPosition(safePosition);
-        armmotor.setPower(armPower / 4);
+        armmotor.setPower(armPower);
     }
 
     public void lazy_susan_function(float stick_x_value) {
@@ -189,7 +218,7 @@ public class ourhardware {
         int lazySusanPosition = (lazysusan.getCurrentPosition() + change_amount);
         // int safePosition = (Range.clip(armPosition,MIN_ARM_POSITION,MAX_ARM_POSITION));
 
-        float lazySusanPower = (Range.clip(stick, -1, 1));
+        float lazySusanPower = (Range.clip(stick, -0.25f, 0.25f));
 
         if (lazySusanPosition >= lazyright && up) {
             lazysusan.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -204,7 +233,40 @@ public class ourhardware {
         }
 
         // armmotor.setTargetPosition(safePosition);
-        lazysusan.setPower(lazySusanPower / 4);
+        lazysusan.setPower(lazySusanPower);
+    }
+
+    public void move_foot_down() {
+        //foot move down
+        movingDown = true;
+        movingUp = false;
+    }
+
+
+    public void move_foot_up() {
+        //foot move down
+        movingDown = false;
+        movingUp = true;
+    }
+
+    public void check_foot(){
+        if (movingDown){
+            if (footmotor.getCurrentPosition() >= MIN_FOOT_POSITION){
+                footmotor.setPower(0);
+                movingDown = false;
+            } else {
+                footmotor.setPower(0.25);
+            }
+
+        }
+        if (movingUp){
+            if (footmotor.getCurrentPosition() <= MAX_FOOT_POSITION){
+                footmotor.setPower(0);
+                movingUp = false;
+            } else {
+                footmotor.setPower(-0.25);
+            }
+        }
     }
 
     /* We stole this code from https://github.com/ftc-9773/ftc_app_9773/blob/master/FtcRobotController/src/main/java/com/qualcomm/ftcrobotcontroller/opmodes/TeleOp.java */
@@ -225,15 +287,74 @@ public class ourhardware {
         leftback.setPower(Range.clip(rearLeftPwr, -1, 1));
     }
 
-    public void driveForward(double speed) {
+    public void driveForward(double speed , int inches) {
+        int     newLeftFrontTarget;
+        int     newRightFrontTarget;
+        int     newLeftBackTarget;
+        int     newRightBackTarget;
+        int     moveCounts;
+
+        leftfront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightfront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftback.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightback.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftfront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightfront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftback.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightback.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        leftfront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightfront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftback.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightback.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        // Determine new target position, and pass to motor controller
+        moveCounts = (int)(inches * COUNTS_PER_INCH);
+        newLeftFrontTarget = leftfront.getCurrentPosition() - moveCounts;
+        newRightFrontTarget = rightfront.getCurrentPosition() + moveCounts;
+        newLeftBackTarget = leftback.getCurrentPosition() - moveCounts;
+        newRightBackTarget = rightback.getCurrentPosition() + moveCounts;
+
+        // Set Target and Turn On RUN_TO_POSITION
+        leftfront.setTargetPosition(newLeftFrontTarget);
+        rightfront.setTargetPosition(newRightFrontTarget);
+        leftback.setTargetPosition(newLeftBackTarget);
+        rightback.setTargetPosition(newRightBackTarget);
+
+
         // Do driving forward stuff
-        leftfront.setPower(speed);
-        rightfront.setPower(speed);
-        leftback.setPower(speed);
-        rightback.setPower(speed);
+        leftfront.setPower(1);
+        rightfront.setPower(1);
+        leftback.setPower(1);
+        rightback.setPower(1);
     }
 
-    public void driveBackward(double speed) {
+    public void driveBackward(double speed , int inches) {
+        int     newLeftFrontTarget;
+        int     newRightFrontTarget;
+        int     newLeftBackTarget;
+        int     newRightBackTarget;
+        int     moveCounts;
+
+        // Determine new target position, and pass to motor controller
+        moveCounts = (int)(inches * COUNTS_PER_INCH);
+        newLeftFrontTarget = leftfront.getCurrentPosition() + moveCounts;
+        newRightFrontTarget = rightfront.getCurrentPosition() + moveCounts;
+        newLeftBackTarget = leftback.getCurrentPosition() + moveCounts;
+        newRightBackTarget = rightback.getCurrentPosition() + moveCounts;
+
+        // Set Target and Turn On RUN_TO_POSITION
+        leftfront.setTargetPosition(newLeftFrontTarget);
+        rightfront.setTargetPosition(newRightFrontTarget);
+        leftback.setTargetPosition(newLeftBackTarget);
+        rightback.setTargetPosition(newRightBackTarget);
+
+        leftfront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightfront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftback.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightback.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         //Do driving backward stuff
         leftfront.setPower(-speed);
         rightfront.setPower(-speed);
@@ -304,5 +425,25 @@ public class ourhardware {
         rightfront.setPower(0);
         leftback.setPower(0);
         rightback.setPower(0);
+    }
+    public void jewelUp() {
+        // Do stopping stuff
+       jewel_arm.setPosition(JEWEL_UP);
+    }
+
+    public void jewelDown() {
+        // Do stopping stuff
+        jewel_arm.setPosition(JEWEL_DOWN);
+    }
+
+    public int  checkForBlue(){
+            return sensorColor.blue();
+    }
+
+    public int  checkForArgb(){
+        return sensorColor.argb();
+    }
+    public int  checkForRed(){
+        return sensorColor.red();
     }
 }
