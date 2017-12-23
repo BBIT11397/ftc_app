@@ -108,6 +108,8 @@ public class ourteleop extends OpMode{
         float turnThrottle;
         float armmotor;
         float lazysusan;
+        float footmotor;
+
 
         boolean jawsclosed;
         boolean jawsopen;
@@ -149,18 +151,6 @@ public class ourteleop extends OpMode{
 
         }
 
-        if (gamepad2.dpad_left) {
-
-            robot.rightClaw.setPosition(robot.jawsclosed);
-            telemetry.addData("position", robot.jawsclosed);
-            telemetry.update();
-
-            robot.leftClaw.setPosition(robot.jawsopen);
-            telemetry.addData("position", robot.jawsopen);
-            telemetry.update();
-
-        }
-
         if (gamepad2.left_bumper) {
 
             robot.rightClaw.setPosition(robot.jawsopen);
@@ -172,6 +162,23 @@ public class ourteleop extends OpMode{
             telemetry.update();
 
         }
+
+        if (gamepad2.x) {
+
+            robot.jewel_arm.setPosition(robot.JEWEL_UP);
+            telemetry.addData("position", robot.JEWEL_UP);
+            telemetry.update();
+        }
+
+        if(gamepad1.a){
+            robot.move_foot_down();
+        }
+
+        if(gamepad1.y){
+            robot.move_foot_up();
+        }
+
+        robot.check_foot();
 
         armmotor = gamepad2.right_stick_y;
         robot.move_arm_function(armmotor);

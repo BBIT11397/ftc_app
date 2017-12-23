@@ -30,9 +30,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -62,8 +60,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Blue_Auto", group="Pushbot")
-public class Blue_Left extends LinearOpMode {
+@Autonomous(name="Blue_Corner", group="Pushbot")
+public class Blue_Corner extends LinearOpMode {
 
     /* Declare OpMode members. */
     ourhardware         robot   = new ourhardware();   // Use a Pushbot's hardware
@@ -110,13 +108,6 @@ public class Blue_Left extends LinearOpMode {
                 robot.jewelUp();
                 sleep(750);
             }
-
-            robot.mecanumWheelDrive(0,0,-.25f,0);
-            sleep(250);
-            robot.mecanumWheelDrive(0,0,0,-1);
-            sleep(1500);
-            robot.mecanumWheelDrive(.5f,0,0,0);
-            sleep(500);
         }
 
         else  {
@@ -127,13 +118,6 @@ public class Blue_Left extends LinearOpMode {
                 robot.jewelUp();
                 sleep(750);
             }
-
-            robot.mecanumWheelDrive(0,0,.25f, 0);
-            sleep(250);
-            robot.mecanumWheelDrive(0,0,0,-1);
-            sleep(1000);
-            robot.mecanumWheelDrive(.5f,0,0,0);
-            sleep(500);
         }
 
 
