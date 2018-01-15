@@ -60,6 +60,7 @@ public class ourhardware {
     public Servo leftClaw = null;
     public Servo jewel_arm = null;
     public DcMotor footmotor = null;
+    public Servo paddleArm = null;
 
 
     static final double MIN_ARM_POSITION = -1200;
@@ -81,6 +82,9 @@ public class ourhardware {
     static final double JEWEL_DOWN = 0.75;
     boolean movingUp = false;
     boolean movingDown = false;
+    static final double PADDLE_OUT = -0.1;
+    static final double PADDLE_IN = 0;
+    static final double armUp = 300;
 
     ColorSensor sensorColor;
 
@@ -145,6 +149,11 @@ public class ourhardware {
         leftClaw.setPosition(jawsclosed);
         //servo
         leftClaw = hwMap.servo.get("leftClaw");
+
+        paddleArm = hwMap.get(Servo.class, "paddleArm");
+
+        //servo
+        paddleArm = hwMap.servo.get("paddleArm");
 
         armmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -362,70 +371,6 @@ public class ourhardware {
         rightback.setPower(-speed);
     }
 
-    public void driveRight(double speed) {
-        // Do driving right stuff
-        leftfront.setPower(speed);
-        rightfront.setPower(-speed);
-        leftback.setPower(-speed);
-        rightback.setPower(speed);
-    }
-
-    public void driveLeft(double speed) {
-        // Do driving left stuff
-        leftfront.setPower(-speed);
-        rightfront.setPower(speed);
-        leftback.setPower(speed);
-        rightback.setPower(-speed);
-    }
-
-    public void turnRight(double speed) {
-        // Do turning right stuff
-        leftfront.setPower(speed);
-        rightfront.setPower(-speed);
-        leftback.setPower(speed);
-        rightback.setPower(-speed);
-    }
-
-    public void turnLeft(double speed) {
-        // Do turning left stuff
-        leftfront.setPower(-speed);
-        rightfront.setPower(speed);
-        leftback.setPower(-speed);
-        rightback.setPower(speed);
-    }
-
-    public void diagonalForwardRight(double speed) {
-        // Do driving diagonal forward right stuff
-        leftfront.setPower(speed);
-        rightback.setPower(speed);
-    }
-
-    public void diagonalForwardLeft(double speed) {
-        // Do driving diagonal forward left stuff
-        rightfront.setPower(speed);
-        leftback.setPower(speed);
-    }
-
-    public void diagonalBackwardRight(double speed) {
-        // Do driving diagonal backward right stuff
-        rightfront.setPower(-speed);
-        leftback.setPower(-speed);
-    }
-
-    public void diagonalBackwardLeft(double speed) {
-        // Do driving diagonal backward left stuff
-        leftfront.setPower(-speed);
-        rightback.setPower(-speed);
-    }
-
-
-    public void motorStop(double speed) {
-        // Do stopping stuff
-        leftfront.setPower(0);
-        rightfront.setPower(0);
-        leftback.setPower(0);
-        rightback.setPower(0);
-    }
     public void jewelUp() {
         // Do stopping stuff
        jewel_arm.setPosition(JEWEL_UP);
@@ -438,10 +383,6 @@ public class ourhardware {
 
     public int  checkForBlue(){
             return sensorColor.blue();
-    }
-
-    public int  checkForArgb(){
-        return sensorColor.argb();
     }
     public int  checkForRed(){
         return sensorColor.red();
