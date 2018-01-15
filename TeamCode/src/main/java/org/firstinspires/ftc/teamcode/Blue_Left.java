@@ -63,6 +63,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name="Blue_Auto", group="Pushbot")
+@Disabled
 public class Blue_Left extends LinearOpMode {
 
     /* Declare OpMode members. */
